@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://rzu-it.github.io/nacree-botanique/sitemap.xml

@@ -1,0 +1,15 @@
+*.log
+*.tmp
+*.bak
+/.env
+/.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+.DS_Store
+Thumbs.db
+Desktop.ini
+/.idea/
+/.vscode/
+ouvrir_local.bat
