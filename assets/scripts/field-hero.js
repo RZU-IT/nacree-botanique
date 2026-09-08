@@ -25,7 +25,10 @@
 
   function readScrollProgress() {
     var rect = section.getBoundingClientRect();
-    var scrollable = Math.max(section.offsetHeight - window.innerHeight, 1);
+    var stickyStyle = window.getComputedStyle(stage.closest('.field-sticky'));
+    var stickyTop = parseFloat(stickyStyle.top) || 0;
+    var stickyHeight = stage.closest('.field-sticky').offsetHeight;
+    var scrollable = Math.max(section.offsetHeight - stickyHeight - stickyTop, 1);
     targetProgress = clamp(-rect.top / scrollable, 0, 1);
     section.style.setProperty('--field-progress', targetProgress.toFixed(4));
     requestFrame();
@@ -137,6 +140,12 @@
 
   window.addEventListener('scroll', readScrollProgress, { passive: true });
   window.addEventListener('resize', readScrollProgress);
+  window.addEventListener('orientationchange', readScrollProgress);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', readScrollProgress);
+  }
   readScrollProgress();
   section.classList.add('is-ready');
 }());
+
+// Copyright RZU Informatique

@@ -152,6 +152,7 @@
   var networkBloom = document.getElementById('network-bloom');
   if (networkBloom) {
     var bloomPetals = Array.prototype.slice.call(networkBloom.querySelectorAll('.bloom-petal'));
+    var bloomHeart = networkBloom.querySelector('.bloom-heart');
     var networkProfiles = Array.prototype.slice.call(networkBloom.querySelectorAll('.network-profile'));
     var networkEmpty = document.getElementById('network-empty');
     var activeNetworkIndex = '';
@@ -199,6 +200,24 @@
         showNetworkProfile(bloomPetals[nextIndex].getAttribute('data-network-index'));
       });
     });
+
+    if (bloomHeart) {
+      bloomHeart.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+    }
+
+    networkBloom.classList.remove('has-selection');
+    bloomPetals.forEach(function (petal) {
+      petal.classList.remove('is-active');
+      petal.parentElement.classList.remove('is-active');
+      petal.setAttribute('aria-selected', 'false');
+    });
+    networkProfiles.forEach(function (profile) {
+      profile.hidden = profile.id !== 'network-panel-01';
+    });
+    if (networkEmpty) networkEmpty.hidden = true;
   }
 
   var welcomeVideoSection = document.querySelector('.welcome-video');
@@ -478,6 +497,22 @@
   window.addEventListener('resize', function () {
     if (window.innerWidth > 900 && nav && nav.classList.contains('open')) closeNav(false);
   });
+
+  function alignCurrentHash() {
+    if (!window.location.hash) return;
+    var id = decodeURIComponent(window.location.hash.slice(1));
+    var target = document.getElementById(id);
+    if (target) target.scrollIntoView({ block: 'start', behavior: 'auto' });
+  }
+
+  if (window.location.hash) {
+    window.requestAnimationFrame(function () {
+      window.requestAnimationFrame(alignCurrentHash);
+    });
+    if (document.readyState !== 'complete') {
+      window.addEventListener('load', alignCurrentHash, { once: true });
+    }
+  }
   }
 
   function startSite() {
@@ -494,3 +529,5 @@
     startSite();
   }
 })();
+
+// Copyright RZU Informatique

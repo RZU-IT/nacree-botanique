@@ -17,3 +17,5 @@
 
   document.dispatchEvent(new Event('includes:ready'));
 }());
+
+// Copyright RZU Informatique
