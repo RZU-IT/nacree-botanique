@@ -8,26 +8,31 @@
   if (!section || !stage || !video) return;
 
   var targetProgress = 0;
+  var renderedProgress = -1;
   var frame = 0;
+  var sticky = stage.closest('.field-sticky');
 
   var effectiveDuration = 0;
   var seekPending = false;
   var videoReady = false;
-  var queuedTime = 0;
 
   function clamp(value, minimum, maximum) {
     return Math.min(maximum, Math.max(minimum, value));
   }
 
-  function readScrollProgress() {
+  function updateProgress() {
     var rect = section.getBoundingClientRect();
-    var stickyStyle = window.getComputedStyle(stage.closest('.field-sticky'));
+    document.body.classList.toggle('field-hero-active', rect.bottom > 0 && rect.top < window.innerHeight);
+    var stickyStyle = window.getComputedStyle(sticky);
     var stickyTop = parseFloat(stickyStyle.top) || 0;
-    var stickyHeight = stage.closest('.field-sticky').offsetHeight;
+    var stickyHeight = sticky.offsetHeight;
     var scrollable = Math.max(section.offsetHeight - stickyHeight - stickyTop, 1);
     targetProgress = clamp(-rect.top / scrollable, 0, 1);
-    section.style.setProperty('--field-progress', targetProgress.toFixed(4));
-    requestFrame();
+
+    if (Math.abs(targetProgress - renderedProgress) > 0.0005) {
+      renderedProgress = targetProgress;
+      section.style.setProperty('--field-progress', targetProgress.toFixed(4));
+    }
   }
 
   function markReady() {
@@ -53,7 +58,6 @@
   function updateScene() {
     if (!effectiveDuration || seekPending) return;
     var target = targetProgress * effectiveDuration;
-    queuedTime = target;
     if (Math.abs(video.currentTime - target) > 0.03) {
       try { video.currentTime = target; } catch (e) {}
     }
@@ -61,6 +65,7 @@
 
   function render() {
     frame = 0;
+    updateProgress();
     updateScene();
   }
 
@@ -68,13 +73,13 @@
     if (!frame) frame = window.requestAnimationFrame(render);
   }
 
-  window.addEventListener('scroll', readScrollProgress, { passive: true });
-  window.addEventListener('resize', readScrollProgress);
-  window.addEventListener('orientationchange', readScrollProgress);
+  window.addEventListener('scroll', requestFrame, { passive: true });
+  window.addEventListener('resize', requestFrame);
+  window.addEventListener('orientationchange', requestFrame);
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', readScrollProgress);
+    window.visualViewport.addEventListener('resize', requestFrame);
   }
-  readScrollProgress();
+  requestFrame();
   section.classList.add('is-ready');
 }());
 

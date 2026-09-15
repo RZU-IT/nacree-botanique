@@ -126,6 +126,12 @@ section[id] { scroll-margin-top: 0; }
   -webkit-backdrop-filter: blur(16px);
 }
 .site-header.is-scrolled { border-color: var(--line); }
+.field-hero-active .site-header,
+.field-hero-active .mobile-actions { display: none; }
+.field-hero-active .field-sticky {
+  top: 0;
+  height: 100svh;
+}
 .header-row { min-height: 82px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
 .logo {
   flex: 0 0 auto;
@@ -243,8 +249,8 @@ section[id] { scroll-margin-top: 0; }
 .field-hero {
   --field-progress: 0;
   position: relative;
-  height: 520vh;
-  min-height: 3600px;
+  height: 320vh;
+  min-height: 2400px;
   background: var(--cream);
 }
 .field-sticky {
@@ -1575,8 +1581,6 @@ section[id] { scroll-margin-top: 0; }
   .field-title-panel h1 { font-size: clamp(1.65rem, 3.7vw, 2.25rem); }
 }
 
-/* Copyright RZU Informatique */
-
 @media (max-width: 680px) {
   .field-hero { height: 390svh; min-height: 2700px; }
   .field-sticky { position: sticky; top: 72px; height: calc(100svh - 72px); min-height: 560px; }
@@ -1603,3 +1607,5 @@ section[id] { scroll-margin-top: 0; }
   .field-botanical { width: 100px; }
   .mobile-actions { position: fixed; }
 }
+
+/* Copyright RZU Informatique */
