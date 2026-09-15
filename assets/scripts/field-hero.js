@@ -8,24 +8,20 @@
   if (!section || !stage || !video) return;
 
   var targetProgress = 0;
-  var progress = 0;
   var frame = 0;
-  var lastTime = performance.now();
 
   var effectiveDuration = 0;
   var seekPending = false;
   var videoReady = false;
-  var primed = false;
-  var interactionPending = false;
-  var objectUrl = '';
-  var compactViewport = window.matchMedia('(max-width: 680px)').matches;
+  var queuedTime = 0;
+  var compactQuery = window.matchMedia('(max-width: 680px)');
 
   function clamp(value, minimum, maximum) {
     return Math.min(maximum, Math.max(minimum, value));
   }
 
   function readScrollProgress() {
-    if (compactViewport) {
+    if (compactQuery.matches) {
       section.style.setProperty('--field-progress', '1');
       return;
     }
@@ -44,7 +40,7 @@
     videoReady = true;
     effectiveDuration = Number.isFinite(video.duration) ? video.duration : 0;
     try { video.currentTime = 0; } catch (e) {}
-    if (compactViewport) {
+    if (compactQuery.matches) {
       video.loop = true;
       video.play().catch(function () {});
       return;
@@ -62,55 +58,19 @@
     requestFrame();
   });
 
-  function primeVideo() {
-    interactionPending = true;
-    if (!video.src) return;
-    if (primed) return;
-    primed = true;
-    video.muted = true;
-    var p = video.play();
-    if (p && p.then) {
-      p.then(function () {
-        video.pause();
-        video.currentTime = 0;
-        markReady();
-      }).catch(function () {});
-    }
-  }
-  window.addEventListener('scroll', primeVideo, { once: true, passive: true });
-  window.addEventListener('touchstart', primeVideo, { once: true, passive: true });
-
-  function applyVideoSource(source) {
-    video.src = source;
-    video.load();
-    if (interactionPending) primeVideo();
-  }
-
-  var videoSource = video.getAttribute('data-src');
-  if (videoSource) applyVideoSource(videoSource);
-
-  window.addEventListener('pagehide', function () {
-    if (objectUrl) window.URL.revokeObjectURL(objectUrl);
-  });
-
   function updateScene() {
-    if (compactViewport) return;
+    if (compactQuery.matches) return;
     if (!effectiveDuration || seekPending) return;
-    var target = progress * effectiveDuration;
+    var target = targetProgress * effectiveDuration;
+    queuedTime = target;
     if (Math.abs(video.currentTime - target) > 0.03) {
       try { video.currentTime = target; } catch (e) {}
     }
   }
 
-  function render(now) {
+  function render() {
     frame = 0;
-    var delta = Math.min(Math.max((now - lastTime) * 0.001, 0.001), 0.05);
-    lastTime = now;
-    progress += (targetProgress - progress) * (1 - Math.exp(-11 * delta));
-
-    if (Math.abs(targetProgress - progress) < 0.00015) progress = targetProgress;
     updateScene();
-    if (Math.abs(targetProgress - progress) >= 0.00015) requestFrame();
   }
 
   function requestFrame() {
@@ -123,6 +83,7 @@
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', readScrollProgress);
   }
+  compactQuery.addEventListener('change', function () { window.location.reload(); });
   readScrollProgress();
   section.classList.add('is-ready');
 }());
