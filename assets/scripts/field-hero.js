@@ -12,7 +12,7 @@
   var frame = 0;
   var lastTime = performance.now();
 
-  var effectiveDuration = null;
+  var effectiveDuration = 0;
   var seekPending = false;
   var videoReady = false;
   var primed = false;
@@ -39,34 +39,16 @@
     requestFrame();
   }
 
-  function calibrateDuration() {
-    if (effectiveDuration !== null) return;
-    function onCalibrated() {
-      video.removeEventListener('seeked', onCalibrated);
-      effectiveDuration = video.currentTime > 0.1 ? video.currentTime : (video.duration || 0);
-      seekPending = false;
-      try { video.currentTime = 0; } catch (e) {}
-    }
-    video.addEventListener('seeked', onCalibrated);
-    try {
-      seekPending = true;
-      video.currentTime = 999999;
-    } catch (e) {
-      effectiveDuration = video.duration || 0;
-      seekPending = false;
-    }
-  }
-
   function markReady() {
     if (videoReady) return;
     videoReady = true;
+    effectiveDuration = Number.isFinite(video.duration) ? video.duration : 0;
+    try { video.currentTime = 0; } catch (e) {}
     if (compactViewport) {
-      effectiveDuration = video.duration || 0;
       video.loop = true;
       video.play().catch(function () {});
       return;
     }
-    calibrateDuration();
   }
 
   video.addEventListener('loadedmetadata', markReady);
@@ -105,22 +87,7 @@
   }
 
   var videoSource = video.getAttribute('data-src');
-  if (videoSource && window.fetch && window.URL && window.URL.createObjectURL) {
-    window.fetch(videoSource)
-      .then(function (response) {
-        if (!response.ok) throw new Error(String(response.status));
-        return response.blob();
-      })
-      .then(function (blob) {
-        objectUrl = window.URL.createObjectURL(blob);
-        applyVideoSource(objectUrl);
-      })
-      .catch(function () {
-        applyVideoSource(videoSource);
-      });
-  } else if (videoSource) {
-    applyVideoSource(videoSource);
-  }
+  if (videoSource) applyVideoSource(videoSource);
 
   window.addEventListener('pagehide', function () {
     if (objectUrl) window.URL.revokeObjectURL(objectUrl);
