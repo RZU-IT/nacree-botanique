@@ -1576,3 +1576,20 @@ section[id] { scroll-margin-top: 0; }
 }
 
 /* Copyright RZU Informatique */
+
+@media (max-width: 680px) {
+  .field-hero { height: auto; min-height: 0; }
+  .field-sticky { position: relative; top: auto; height: min(780px, calc(100svh - 72px)); min-height: 620px; }
+  .field-stage::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(3, 25, 24, .16), transparent 28%, transparent 67%, rgba(3, 25, 24, .28));
+  }
+  .field-title-panel,
+  .field-scroll-marker { z-index: 3; }
+  .field-title-panel { bottom: 22px; }
+  .mobile-actions { position: static; }
+}

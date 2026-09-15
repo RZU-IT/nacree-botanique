@@ -18,12 +18,17 @@
   var primed = false;
   var interactionPending = false;
   var objectUrl = '';
+  var compactViewport = window.matchMedia('(max-width: 680px)').matches;
 
   function clamp(value, minimum, maximum) {
     return Math.min(maximum, Math.max(minimum, value));
   }
 
   function readScrollProgress() {
+    if (compactViewport) {
+      section.style.setProperty('--field-progress', '1');
+      return;
+    }
     var rect = section.getBoundingClientRect();
     var stickyStyle = window.getComputedStyle(stage.closest('.field-sticky'));
     var stickyTop = parseFloat(stickyStyle.top) || 0;
@@ -55,6 +60,12 @@
   function markReady() {
     if (videoReady) return;
     videoReady = true;
+    if (compactViewport) {
+      effectiveDuration = video.duration || 0;
+      video.loop = true;
+      video.play().catch(function () {});
+      return;
+    }
     calibrateDuration();
   }
 
@@ -116,6 +127,7 @@
   });
 
   function updateScene() {
+    if (compactViewport) return;
     if (!effectiveDuration || seekPending) return;
     var target = progress * effectiveDuration;
     if (Math.abs(video.currentTime - target) > 0.03) {
