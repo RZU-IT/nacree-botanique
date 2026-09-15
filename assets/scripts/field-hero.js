@@ -14,17 +14,12 @@
   var seekPending = false;
   var videoReady = false;
   var queuedTime = 0;
-  var compactQuery = window.matchMedia('(max-width: 680px)');
 
   function clamp(value, minimum, maximum) {
     return Math.min(maximum, Math.max(minimum, value));
   }
 
   function readScrollProgress() {
-    if (compactQuery.matches) {
-      section.style.setProperty('--field-progress', '1');
-      return;
-    }
     var rect = section.getBoundingClientRect();
     var stickyStyle = window.getComputedStyle(stage.closest('.field-sticky'));
     var stickyTop = parseFloat(stickyStyle.top) || 0;
@@ -40,11 +35,8 @@
     videoReady = true;
     effectiveDuration = Number.isFinite(video.duration) ? video.duration : 0;
     try { video.currentTime = 0; } catch (e) {}
-    if (compactQuery.matches) {
-      video.loop = true;
-      video.play().catch(function () {});
-      return;
-    }
+    video.loop = false;
+    video.pause();
   }
 
   video.addEventListener('loadedmetadata', markReady);
@@ -59,7 +51,6 @@
   });
 
   function updateScene() {
-    if (compactQuery.matches) return;
     if (!effectiveDuration || seekPending) return;
     var target = targetProgress * effectiveDuration;
     queuedTime = target;
@@ -83,7 +74,6 @@
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', readScrollProgress);
   }
-  compactQuery.addEventListener('change', function () { window.location.reload(); });
   readScrollProgress();
   section.classList.add('is-ready');
 }());

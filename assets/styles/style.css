@@ -243,8 +243,8 @@ section[id] { scroll-margin-top: 0; }
 .field-hero {
   --field-progress: 0;
   position: relative;
-  height: 300vh;
-  min-height: 1800px;
+  height: 520vh;
+  min-height: 3600px;
   background: var(--cream);
 }
 .field-sticky {
@@ -1578,8 +1578,8 @@ section[id] { scroll-margin-top: 0; }
 /* Copyright RZU Informatique */
 
 @media (max-width: 680px) {
-  .field-hero { height: auto; min-height: 0; }
-  .field-sticky { position: relative; top: auto; height: min(780px, calc(100svh - 72px)); min-height: 620px; }
+  .field-hero { height: 390svh; min-height: 2700px; }
+  .field-sticky { position: sticky; top: 72px; height: calc(100svh - 72px); min-height: 560px; }
   .field-stage::after {
     content: "";
     position: absolute;
@@ -1590,6 +1590,16 @@ section[id] { scroll-margin-top: 0; }
   }
   .field-title-panel,
   .field-scroll-marker { z-index: 3; }
-  .field-title-panel { bottom: 22px; }
-  .mobile-actions { position: static; }
+  .field-title-panel { right: 14px; bottom: 70px; left: 14px; }
+  .field-title-card {
+    width: min(100%, 430px);
+    margin-inline: auto;
+    padding: 19px 23px 20px;
+    border-radius: 2px 46px 2px 2px;
+  }
+  .field-signature { margin-bottom: 9px; }
+  .field-title-panel h1 { font-size: clamp(1.42rem, 6.4vw, 1.9rem); }
+  .field-gold-line { margin-top: 12px; }
+  .field-botanical { width: 100px; }
+  .mobile-actions { position: fixed; }
 }
