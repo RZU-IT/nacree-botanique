@@ -32,7 +32,14 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-body.nav-open { overflow: hidden; }
+body.nav-open {
+  position: fixed;
+  top: var(--nav-scroll-offset, 0);
+  right: 0;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+}
 img { display: block; max-width: 100%; }
 a { color: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }

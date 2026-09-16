@@ -10,10 +10,16 @@
   var closeButton = document.getElementById('nav-close');
   var backdrop = document.getElementById('nav-backdrop');
   var lastFocusedElement = null;
+  var navScrollPosition = 0;
+  var navSnapWasEnabled = false;
 
   function openNav() {
     if (!nav || !toggle || !backdrop) return;
     lastFocusedElement = document.activeElement;
+    navScrollPosition = Math.max(window.scrollY, 0);
+    navSnapWasEnabled = document.documentElement.classList.contains('welcome-snap-enabled');
+    document.documentElement.classList.remove('welcome-snap-enabled');
+    body.style.setProperty('--nav-scroll-offset', '-' + navScrollPosition + 'px');
     nav.classList.add('open');
     toggle.setAttribute('aria-expanded', 'true');
     backdrop.hidden = false;
@@ -30,8 +36,18 @@
     toggle.setAttribute('aria-expanded', 'false');
     backdrop.classList.remove('is-visible');
     body.classList.remove('nav-open');
+    body.style.removeProperty('--nav-scroll-offset');
+    window.scrollTo(0, navScrollPosition);
     window.setTimeout(function () { backdrop.hidden = true; }, 300);
-    if (restoreFocus && lastFocusedElement) lastFocusedElement.focus();
+    if (restoreFocus && lastFocusedElement) {
+      try { lastFocusedElement.focus({ preventScroll: true }); }
+      catch (_error) { lastFocusedElement.focus(); }
+    }
+    if (navSnapWasEnabled) {
+      window.requestAnimationFrame(function () {
+        document.documentElement.classList.add('welcome-snap-enabled');
+      });
+    }
   }
 
   if (toggle && nav && backdrop) {
