@@ -10,16 +10,10 @@
   var closeButton = document.getElementById('nav-close');
   var backdrop = document.getElementById('nav-backdrop');
   var lastFocusedElement = null;
-  var navScrollPosition = 0;
-  var navSnapWasEnabled = false;
 
   function openNav() {
     if (!nav || !toggle || !backdrop) return;
     lastFocusedElement = document.activeElement;
-    navScrollPosition = Math.max(window.scrollY, 0);
-    navSnapWasEnabled = document.documentElement.classList.contains('welcome-snap-enabled');
-    document.documentElement.classList.remove('welcome-snap-enabled');
-    body.style.setProperty('--nav-scroll-offset', '-' + navScrollPosition + 'px');
     nav.classList.add('open');
     toggle.setAttribute('aria-expanded', 'true');
     backdrop.hidden = false;
@@ -36,17 +30,10 @@
     toggle.setAttribute('aria-expanded', 'false');
     backdrop.classList.remove('is-visible');
     body.classList.remove('nav-open');
-    body.style.removeProperty('--nav-scroll-offset');
-    window.scrollTo(0, navScrollPosition);
     window.setTimeout(function () { backdrop.hidden = true; }, 300);
     if (restoreFocus && lastFocusedElement) {
       try { lastFocusedElement.focus({ preventScroll: true }); }
       catch (_error) { lastFocusedElement.focus(); }
-    }
-    if (navSnapWasEnabled) {
-      window.requestAnimationFrame(function () {
-        document.documentElement.classList.add('welcome-snap-enabled');
-      });
     }
   }
 
@@ -234,138 +221,6 @@
       profile.hidden = profile.id !== 'network-panel-01';
     });
     if (networkEmpty) networkEmpty.hidden = true;
-  }
-
-  var welcomeVideoSection = document.querySelector('.welcome-video');
-  var welcomeVideoMedia = welcomeVideoSection ? welcomeVideoSection.querySelector('.welcome-video-media') : null;
-  var welcomeVideoContent = document.querySelector('.welcome-video-content');
-  var welcomeVideoSteps = document.querySelectorAll('[data-video-step]');
-  var welcomeVideoStage = 0;
-  var welcomeVideoFrame = 0;
-  var welcomeCompactViewport = window.matchMedia('(max-width: 680px)').matches;
-  var welcomeSnapAllowed = welcomeCompactViewport && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  function completeWelcomeVideoSequence() {
-    if (!welcomeVideoSection || welcomeVideoSection.classList.contains('is-complete')) return;
-
-    var followingSection = welcomeVideoSection.nextElementSibling;
-    var followingSectionTop = followingSection ? followingSection.getBoundingClientRect().top : 0;
-    if (followingSection) {
-      Array.prototype.forEach.call(followingSection.querySelectorAll('.reveal'), function (element) {
-        element.classList.add('in-view');
-      });
-    }
-
-    welcomeVideoSection.classList.add('is-complete');
-    document.documentElement.classList.remove('welcome-snap-enabled');
-    if (followingSection) {
-      var positionDifference = followingSection.getBoundingClientRect().top - followingSectionTop;
-      if (Math.abs(positionDifference) > 1) {
-        var previousScrollBehavior = document.documentElement.style.scrollBehavior;
-        document.documentElement.style.scrollBehavior = 'auto';
-        window.scrollBy(0, positionDifference);
-        window.requestAnimationFrame(function () {
-          document.documentElement.style.scrollBehavior = previousScrollBehavior;
-        });
-      }
-    }
-    window.removeEventListener('scroll', requestWelcomeVideoUpdate);
-    window.removeEventListener('resize', requestWelcomeVideoUpdate);
-  }
-
-  function revealWelcomeVideoStage(nextStage) {
-    if (nextStage <= welcomeVideoStage) return;
-    welcomeVideoStage = nextStage;
-
-    Array.prototype.forEach.call(welcomeVideoSteps, function (step) {
-      if (Number(step.getAttribute('data-video-step')) <= welcomeVideoStage) {
-        step.classList.add('is-visible');
-      }
-    });
-
-  }
-
-  function updateWelcomeVideoSequence() {
-    welcomeVideoFrame = 0;
-    if (!welcomeVideoSection || !welcomeVideoContent || welcomeVideoSection.classList.contains('is-complete')) return;
-
-    var sectionRect = welcomeVideoSection.getBoundingClientRect();
-    var stickyOffset = window.innerWidth <= 900 ? 72 : 82;
-    if (welcomeSnapAllowed) {
-      var welcomeSnapActive = sectionRect.top <= window.innerHeight * 0.85 && sectionRect.bottom > stickyOffset + 1;
-      document.documentElement.classList.toggle('welcome-snap-enabled', welcomeSnapActive);
-    }
-    var scrollRange = Math.max(1, welcomeVideoSection.offsetHeight - welcomeVideoContent.offsetHeight);
-    var travelled = Math.max(0, stickyOffset - sectionRect.top);
-    var progress = Math.min(1, travelled / scrollRange);
-
-    if (welcomeCompactViewport) {
-      if (progress >= 0.66) revealWelcomeVideoStage(3);
-      else if (progress >= 0.33) revealWelcomeVideoStage(2);
-    } else {
-      if (progress >= 0.66) revealWelcomeVideoStage(3);
-      else if (progress >= 0.3) revealWelcomeVideoStage(2);
-      else if (progress >= 0.06) revealWelcomeVideoStage(1);
-    }
-
-    var followingSection = welcomeVideoSection.nextElementSibling;
-    if (welcomeVideoStage === 3 && followingSection && followingSection.getBoundingClientRect().top <= stickyOffset + 1) {
-      completeWelcomeVideoSequence();
-    }
-  }
-
-  function requestWelcomeVideoUpdate() {
-    if (welcomeVideoFrame) return;
-    welcomeVideoFrame = window.requestAnimationFrame(updateWelcomeVideoSequence);
-  }
-
-  if (welcomeVideoSection && welcomeVideoContent && welcomeVideoSteps.length) {
-    if (welcomeSnapAllowed) {
-      var welcomeSnapPoints = [0, 0.33, 0.66, 1];
-      var welcomeSnapStops = welcomeSnapPoints.map(function (progress) {
-        var stop = document.createElement('span');
-        stop.className = 'mobile-scroll-stop';
-        stop.setAttribute('aria-hidden', 'true');
-        stop.dataset.progress = String(progress);
-        welcomeVideoSection.appendChild(stop);
-        return stop;
-      });
-
-      var positionWelcomeSnapStops = function () {
-        var travel = Math.max(0, welcomeVideoSection.offsetHeight - welcomeVideoContent.offsetHeight);
-        welcomeSnapStops.forEach(function (stop) {
-          var progress = Number(stop.dataset.progress);
-          stop.style.top = Math.max(0, progress * travel - 72) + 'px';
-        });
-      };
-
-      positionWelcomeSnapStops();
-      window.addEventListener('resize', positionWelcomeSnapStops);
-      window.addEventListener('orientationchange', positionWelcomeSnapStops);
-    }
-
-    window.addEventListener('scroll', requestWelcomeVideoUpdate, { passive: true });
-    window.addEventListener('resize', requestWelcomeVideoUpdate);
-    requestWelcomeVideoUpdate();
-  }
-
-  if (welcomeVideoMedia) {
-    if ('IntersectionObserver' in window) {
-      var welcomeMediaObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            var playback = welcomeVideoMedia.play();
-            if (playback && playback.catch) playback.catch(function () {});
-          } else {
-            welcomeVideoMedia.pause();
-          }
-        });
-      }, { threshold: 0.08 });
-      welcomeMediaObserver.observe(welcomeVideoMedia);
-    } else {
-      var fallbackPlayback = welcomeVideoMedia.play();
-      if (fallbackPlayback && fallbackPlayback.catch) fallbackPlayback.catch(function () {});
-    }
   }
 
   var hourCounts = Array.prototype.slice.call(document.querySelectorAll('.hour-count'));

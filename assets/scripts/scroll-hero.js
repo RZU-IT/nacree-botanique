@@ -18,8 +18,16 @@
   var heroActive = null;
 
   var effectiveDuration = 0;
+  var desiredTime = 0;
   var seekPending = false;
   var videoReady = false;
+  var touchStartY = 0;
+  var touchStartScrollY = 0;
+  var touchGestureStopped = false;
+  var wheelGestureStopped = false;
+  var wheelReleaseTimer = 0;
+  var exitBlockedOnce = false;
+  var exitUnlocked = false;
 
   function clamp(value, minimum, maximum) {
     return Math.min(maximum, Math.max(minimum, value));
@@ -45,6 +53,10 @@
     }
 
     var scrollY = Math.max(window.scrollY, 0);
+    if (scrollY < heroEndScrollY() - 24) {
+      exitBlockedOnce = false;
+      exitUnlocked = false;
+    }
     var nextProgress = clamp((scrollY - sectionTop) / scrollRange, 0, 1);
     if (scrollY >= lastScrollY - 1) nextProgress = Math.max(targetProgress, nextProgress);
     targetProgress = nextProgress;
@@ -60,9 +72,18 @@
     if (videoReady) return;
     videoReady = true;
     effectiveDuration = Number.isFinite(video.duration) ? video.duration : 0;
-    try { video.currentTime = 0; } catch (e) {}
     video.loop = false;
     video.pause();
+    // Decode and paint the real opening frame immediately. A separate poster
+    // would otherwise remain visible until the first scroll-driven seek.
+    if (video.currentTime === 0 && effectiveDuration > 0) {
+      try {
+        video.currentTime = Math.min(0.001, effectiveDuration);
+      } catch (e) {
+        // The normal scroll renderer will retry once the media can seek.
+      }
+    }
+    updateScene();
   }
 
   video.addEventListener('loadedmetadata', markReady);
@@ -70,19 +91,22 @@
   video.addEventListener('canplay', markReady);
   if (video.readyState >= 1) markReady();
 
-  video.addEventListener('seeking', function () { seekPending = true; });
   video.addEventListener('seeked', function () {
     seekPending = false;
-    updateProgress();
     updateScene();
   });
 
   function updateScene() {
-    if (!effectiveDuration || seekPending) return;
+    if (!effectiveDuration) return;
     var lastStableFrame = Math.max(0, effectiveDuration - 0.04);
-    var target = clamp(targetProgress * effectiveDuration, 0, lastStableFrame);
-    if (Math.abs(video.currentTime - target) > 0.05) {
-      try { video.currentTime = target; } catch (e) {}
+    desiredTime = clamp(targetProgress * effectiveDuration, 0, lastStableFrame);
+    if (seekPending || Math.abs(video.currentTime - desiredTime) <= 0.04) return;
+
+    seekPending = true;
+    try {
+      video.currentTime = desiredTime;
+    } catch (e) {
+      seekPending = false;
     }
   }
 
@@ -104,6 +128,57 @@
   function handleResize() {
     if (document.documentElement.clientWidth !== measuredWidth) refreshMetrics();
   }
+
+  function heroEndScrollY() {
+    if (!measuredWidth) measureScrollRange();
+    return sectionTop + scrollRange;
+  }
+
+  function stopAtHeroEnd(event, requestedScrollY, isTouchGesture) {
+    if (exitUnlocked) return false;
+    var endScrollY = heroEndScrollY();
+    if (requestedScrollY <= endScrollY + 1) return false;
+    event.preventDefault();
+    if (!isTouchGesture || window.scrollY < endScrollY) {
+      window.scrollTo(0, Math.max(window.scrollY, endScrollY));
+    }
+    exitBlockedOnce = true;
+    requestFrame();
+    return true;
+  }
+
+  section.addEventListener('touchstart', function (event) {
+    if (!event.touches.length) return;
+    touchStartY = event.touches[0].clientY;
+    touchStartScrollY = Math.max(window.scrollY, 0);
+    touchGestureStopped = false;
+    if (exitBlockedOnce && touchStartScrollY >= heroEndScrollY() - 2) exitUnlocked = true;
+  }, { passive: true });
+
+  section.addEventListener('touchmove', function (event) {
+    if (!event.touches.length) return;
+    var distance = touchStartY - event.touches[0].clientY;
+    if (distance <= 0) return;
+    if (touchGestureStopped) {
+      event.preventDefault();
+      return;
+    }
+    touchGestureStopped = stopAtHeroEnd(event, touchStartScrollY + distance, true);
+  }, { passive: false });
+
+  section.addEventListener('wheel', function (event) {
+    window.clearTimeout(wheelReleaseTimer);
+    wheelReleaseTimer = window.setTimeout(function () {
+      wheelGestureStopped = false;
+      if (exitBlockedOnce) exitUnlocked = true;
+    }, 180);
+    if (event.deltaY <= 0) return;
+    if (wheelGestureStopped) {
+      event.preventDefault();
+      return;
+    }
+    wheelGestureStopped = stopAtHeroEnd(event, Math.max(window.scrollY, 0) + event.deltaY, false);
+  }, { passive: false });
 
   window.addEventListener('scroll', requestFrame, { passive: true });
   window.addEventListener('resize', handleResize);
