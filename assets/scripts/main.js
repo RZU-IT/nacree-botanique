@@ -226,6 +226,7 @@
   var welcomeVideoSteps = document.querySelectorAll('[data-video-step]');
   var welcomeVideoStage = 0;
   var welcomeVideoFrame = 0;
+  var welcomeCompactViewport = window.matchMedia('(max-width: 680px)').matches;
 
   function completeWelcomeVideoSequence() {
     if (!welcomeVideoSection || welcomeVideoSection.classList.contains('is-complete')) return;
@@ -276,9 +277,13 @@
     var travelled = Math.max(0, stickyOffset - sectionRect.top);
     var progress = Math.min(1, travelled / scrollRange);
 
-    if (progress >= 0.66) revealWelcomeVideoStage(3);
-    else if (progress >= 0.3) revealWelcomeVideoStage(2);
-    else if (progress >= 0.06) revealWelcomeVideoStage(1);
+    var stageOneAt = welcomeCompactViewport ? 0.18 : 0.06;
+    var stageTwoAt = welcomeCompactViewport ? 0.48 : 0.3;
+    var stageThreeAt = welcomeCompactViewport ? 0.78 : 0.66;
+
+    if (progress >= stageThreeAt) revealWelcomeVideoStage(3);
+    else if (progress >= stageTwoAt) revealWelcomeVideoStage(2);
+    else if (progress >= stageOneAt) revealWelcomeVideoStage(1);
 
     var followingSection = welcomeVideoSection.nextElementSibling;
     if (welcomeVideoStage === 3 && followingSection && followingSection.getBoundingClientRect().top <= stickyOffset + 1) {
@@ -292,6 +297,30 @@
   }
 
   if (welcomeVideoSection && welcomeVideoContent && welcomeVideoSteps.length) {
+    if (welcomeCompactViewport && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      var welcomeSnapPoints = [0, 0.18, 0.48, 0.78, 1];
+      var welcomeSnapStops = welcomeSnapPoints.map(function (progress) {
+        var stop = document.createElement('span');
+        stop.className = 'mobile-scroll-stop';
+        stop.setAttribute('aria-hidden', 'true');
+        stop.dataset.progress = String(progress);
+        welcomeVideoSection.appendChild(stop);
+        return stop;
+      });
+
+      var positionWelcomeSnapStops = function () {
+        var travel = Math.max(0, welcomeVideoSection.offsetHeight - welcomeVideoContent.offsetHeight);
+        welcomeSnapStops.forEach(function (stop) {
+          var progress = Number(stop.dataset.progress);
+          stop.style.top = Math.max(0, progress * travel - 72) + 'px';
+        });
+      };
+
+      positionWelcomeSnapStops();
+      window.addEventListener('resize', positionWelcomeSnapStops);
+      window.addEventListener('orientationchange', positionWelcomeSnapStops);
+    }
+
     window.addEventListener('scroll', requestWelcomeVideoUpdate, { passive: true });
     window.addEventListener('resize', requestWelcomeVideoUpdate);
     requestWelcomeVideoUpdate();

@@ -1346,6 +1346,17 @@ section[id] { scroll-margin-top: 0; }
 }
 
 @media (max-width: 680px) {
+  html { scroll-snap-type: y proximity; }
+  .welcome-original { height: calc(360svh - 72px); }
+  .mobile-scroll-stop {
+    position: absolute;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
   section[id] { scroll-margin-top: 0; }
   .wrap { width: min(100% - 32px, 560px); }
   .field-hero { height: calc(100svh + 1100px); min-height: 0; }
