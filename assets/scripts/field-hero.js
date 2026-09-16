@@ -11,6 +11,11 @@
   var renderedProgress = -1;
   var frame = 0;
   var sticky = stage.closest('.field-sticky');
+  var sectionTop = 0;
+  var scrollRange = 1;
+  var measuredWidth = 0;
+  var lastScrollY = Math.max(window.scrollY, 0);
+  var heroActive = null;
 
   var effectiveDuration = 0;
   var seekPending = false;
@@ -20,14 +25,30 @@
     return Math.min(maximum, Math.max(minimum, value));
   }
 
-  function updateProgress() {
+  function measureScrollRange() {
     var rect = section.getBoundingClientRect();
-    document.body.classList.toggle('field-hero-active', rect.bottom > 0 && rect.top < window.innerHeight);
     var stickyStyle = window.getComputedStyle(sticky);
     var stickyTop = parseFloat(stickyStyle.top) || 0;
-    var stickyHeight = sticky.offsetHeight;
-    var scrollable = Math.max(section.offsetHeight - stickyHeight - stickyTop, 1);
-    targetProgress = clamp(-rect.top / scrollable, 0, 1);
+    sectionTop = Math.max(window.scrollY, 0) + rect.top;
+    scrollRange = Math.max(section.offsetHeight - sticky.offsetHeight - stickyTop, 1);
+    measuredWidth = document.documentElement.clientWidth;
+  }
+
+  function updateProgress() {
+    if (!measuredWidth) measureScrollRange();
+
+    var rect = section.getBoundingClientRect();
+    var isActive = rect.bottom > 0 && rect.top < window.innerHeight;
+    if (isActive !== heroActive) {
+      heroActive = isActive;
+      document.body.classList.toggle('field-hero-active', isActive);
+    }
+
+    var scrollY = Math.max(window.scrollY, 0);
+    var nextProgress = clamp((scrollY - sectionTop) / scrollRange, 0, 1);
+    if (scrollY >= lastScrollY - 1) nextProgress = Math.max(targetProgress, nextProgress);
+    targetProgress = nextProgress;
+    lastScrollY = scrollY;
 
     if (Math.abs(targetProgress - renderedProgress) > 0.0005) {
       renderedProgress = targetProgress;
@@ -57,8 +78,9 @@
 
   function updateScene() {
     if (!effectiveDuration || seekPending) return;
-    var target = targetProgress * effectiveDuration;
-    if (Math.abs(video.currentTime - target) > 0.03) {
+    var lastStableFrame = Math.max(0, effectiveDuration - 0.04);
+    var target = clamp(targetProgress * effectiveDuration, 0, lastStableFrame);
+    if (Math.abs(video.currentTime - target) > 0.05) {
       try { video.currentTime = target; } catch (e) {}
     }
   }
@@ -73,12 +95,20 @@
     if (!frame) frame = window.requestAnimationFrame(render);
   }
 
-  window.addEventListener('scroll', requestFrame, { passive: true });
-  window.addEventListener('resize', requestFrame);
-  window.addEventListener('orientationchange', requestFrame);
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', requestFrame);
+  function refreshMetrics() {
+    measuredWidth = 0;
+    requestFrame();
   }
+
+  function handleResize() {
+    if (document.documentElement.clientWidth !== measuredWidth) refreshMetrics();
+  }
+
+  window.addEventListener('scroll', requestFrame, { passive: true });
+  window.addEventListener('resize', handleResize);
+  window.addEventListener('orientationchange', refreshMetrics);
+  window.addEventListener('load', refreshMetrics, { once: true });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refreshMetrics);
   requestFrame();
   section.classList.add('is-ready');
 }());
