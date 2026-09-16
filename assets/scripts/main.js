@@ -299,13 +299,14 @@
     var travelled = Math.max(0, stickyOffset - sectionRect.top);
     var progress = Math.min(1, travelled / scrollRange);
 
-    var stageOneAt = welcomeCompactViewport ? 0.18 : 0.06;
-    var stageTwoAt = welcomeCompactViewport ? 0.48 : 0.3;
-    var stageThreeAt = welcomeCompactViewport ? 0.78 : 0.66;
-
-    if (progress >= stageThreeAt) revealWelcomeVideoStage(3);
-    else if (progress >= stageTwoAt) revealWelcomeVideoStage(2);
-    else if (progress >= stageOneAt) revealWelcomeVideoStage(1);
+    if (welcomeCompactViewport) {
+      if (progress >= 0.66) revealWelcomeVideoStage(3);
+      else if (progress >= 0.33) revealWelcomeVideoStage(2);
+    } else {
+      if (progress >= 0.66) revealWelcomeVideoStage(3);
+      else if (progress >= 0.3) revealWelcomeVideoStage(2);
+      else if (progress >= 0.06) revealWelcomeVideoStage(1);
+    }
 
     var followingSection = welcomeVideoSection.nextElementSibling;
     if (welcomeVideoStage === 3 && followingSection && followingSection.getBoundingClientRect().top <= stickyOffset + 1) {
@@ -320,7 +321,7 @@
 
   if (welcomeVideoSection && welcomeVideoContent && welcomeVideoSteps.length) {
     if (welcomeSnapAllowed) {
-      var welcomeSnapPoints = [0, 0.18, 0.48, 0.78, 1];
+      var welcomeSnapPoints = [0, 0.33, 0.66, 1];
       var welcomeSnapStops = welcomeSnapPoints.map(function (progress) {
         var stop = document.createElement('span');
         stop.className = 'mobile-scroll-stop';
