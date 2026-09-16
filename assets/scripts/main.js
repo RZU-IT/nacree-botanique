@@ -227,6 +227,7 @@
   var welcomeVideoStage = 0;
   var welcomeVideoFrame = 0;
   var welcomeCompactViewport = window.matchMedia('(max-width: 680px)').matches;
+  var welcomeSnapAllowed = welcomeCompactViewport && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function completeWelcomeVideoSequence() {
     if (!welcomeVideoSection || welcomeVideoSection.classList.contains('is-complete')) return;
@@ -240,6 +241,7 @@
     }
 
     welcomeVideoSection.classList.add('is-complete');
+    document.documentElement.classList.remove('welcome-snap-enabled');
     if (followingSection) {
       var positionDifference = followingSection.getBoundingClientRect().top - followingSectionTop;
       if (Math.abs(positionDifference) > 1) {
@@ -273,6 +275,10 @@
 
     var sectionRect = welcomeVideoSection.getBoundingClientRect();
     var stickyOffset = window.innerWidth <= 900 ? 72 : 82;
+    if (welcomeSnapAllowed) {
+      var welcomeSnapActive = sectionRect.top <= window.innerHeight * 0.85 && sectionRect.bottom > stickyOffset + 1;
+      document.documentElement.classList.toggle('welcome-snap-enabled', welcomeSnapActive);
+    }
     var scrollRange = Math.max(1, welcomeVideoSection.offsetHeight - welcomeVideoContent.offsetHeight);
     var travelled = Math.max(0, stickyOffset - sectionRect.top);
     var progress = Math.min(1, travelled / scrollRange);
@@ -297,7 +303,7 @@
   }
 
   if (welcomeVideoSection && welcomeVideoContent && welcomeVideoSteps.length) {
-    if (welcomeCompactViewport && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (welcomeSnapAllowed) {
       var welcomeSnapPoints = [0, 0.18, 0.48, 0.78, 1];
       var welcomeSnapStops = welcomeSnapPoints.map(function (progress) {
         var stop = document.createElement('span');

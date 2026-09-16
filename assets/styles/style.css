@@ -1346,7 +1346,7 @@ section[id] { scroll-margin-top: 0; }
 }
 
 @media (max-width: 680px) {
-  html { scroll-snap-type: y proximity; }
+  html.welcome-snap-enabled { scroll-snap-type: y mandatory; }
   .welcome-original { height: calc(360svh - 72px); }
   .mobile-scroll-stop {
     position: absolute;
