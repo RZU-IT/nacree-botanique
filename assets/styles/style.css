@@ -1366,7 +1366,7 @@ section[id] { scroll-margin-top: 0; }
   }
   section[id] { scroll-margin-top: 0; }
   .wrap { width: min(100% - 32px, 560px); }
-  .field-hero { height: calc(100svh + 1100px); min-height: 0; }
+  .field-hero { height: calc(100svh + 760px); min-height: 0; }
   .field-showcase {
     width: 100%;
   }
@@ -1600,8 +1600,8 @@ section[id] { scroll-margin-top: 0; }
 }
 
 @media (max-width: 680px) {
-  .field-hero { height: 390svh; min-height: 2700px; }
-  .field-sticky { position: sticky; top: 72px; height: calc(100svh - 72px); min-height: 560px; }
+  .field-hero { height: calc(100svh + 760px); min-height: 0; }
+  .field-sticky { position: sticky; top: 72px; height: calc(100svh - 72px); min-height: 0; }
   .field-stage::after {
     content: "";
     position: absolute;

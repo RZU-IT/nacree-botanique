@@ -73,7 +73,8 @@
   video.addEventListener('seeking', function () { seekPending = true; });
   video.addEventListener('seeked', function () {
     seekPending = false;
-    requestFrame();
+    updateProgress();
+    updateScene();
   });
 
   function updateScene() {
