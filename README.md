@@ -1,17 +1,25 @@
 # Nacrée Botanique
 
-Site vitrine statique de démonstration pour un atelier floral à Villeneuve-sur-Lot.
+Vitrine florale de démonstration : bouquets, créations et univers de l'atelier. Le travail visuel associe vidéos, compositions florales et animations au défilement.
 
-## Utilisation locale
+[Voir le site](https://rzu-it.github.io/nacree-botanique/)
 
-Lancer `ouvrir_local.bat`, puis ouvrir `http://127.0.0.1:8013/`.
+![Univers Nacrée Botanique](assets/images/hero-banner.jpg)
 
-Le serveur HTTP est nécessaire pour charger les partials de navigation et de pied de page.
+## Projet
 
-## Publication
-
-Le projet est organisé pour GitHub Pages : assets locaux, partials, `.nojekyll`, `robots.txt` et `sitemap.xml`.
-
-## Identité
+HTML, CSS et JavaScript, sans compilation. `index.html` compose la page ; `assets/` contient les styles, scripts et médias ; `partials/` regroupe la navigation et le pied de page.
 
 Nacrée Botanique est une identité créée pour présenter le savoir-faire de RZU Informatique. Les horaires, prestations et zones indiquées sont fictifs et ne décrivent aucun commerce réel.
+
+## Lancer en local
+
+Depuis la racine du dépôt, avec Python installé :
+
+```sh
+python -m http.server 8000 --bind 127.0.0.1
+```
+
+Ouvrir <http://127.0.0.1:8000/>. Le chargement des partials nécessite HTTP.
+
+Les informations sur les médias sont dans [assets/images/README-license.txt](assets/images/README-license.txt) et [assets/videos/README-license.txt](assets/videos/README-license.txt).
