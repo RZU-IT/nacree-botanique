@@ -23,3 +23,9 @@ python -m http.server 8000 --bind 127.0.0.1
 Ouvrir <http://127.0.0.1:8000/>. Le chargement des partials nécessite HTTP.
 
 Les informations sur les médias sont dans [assets/images/README-license.txt](assets/images/README-license.txt) et [assets/videos/README-license.txt](assets/videos/README-license.txt).
+
+## Consultation et réutilisation
+
+Ce site est une démonstration réalisée par **RZU Informatique**. Vous pouvez le consulter et explorer les sources. Pour reprendre le code, le design ou les contenus dans un autre projet, merci de demander une autorisation préalable.
+
+Les éléments tiers conservent leurs droits et licences respectifs.
