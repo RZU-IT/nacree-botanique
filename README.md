@@ -1,31 +1,21 @@
 # Nacrée Botanique
 
-Vitrine florale de démonstration : bouquets, créations et univers de l'atelier. Le travail visuel associe vidéos, compositions florales et animations au défilement.
+Démonstration de site pour un atelier floral, avec vidéos et animations au défilement.
 
 [Voir le site](https://rzu-it.github.io/nacree-botanique/)
 
-![Univers Nacrée Botanique](assets/images/hero-banner.jpg)
+![Nacrée Botanique](assets/images/hero-banner.jpg)
 
-## Projet
+HTML, CSS et JavaScript. Identité et informations commerciales fictives. Les crédits des médias sont dans [images](assets/images/README-license.txt) et [vidéos](assets/videos/README-license.txt).
 
-HTML, CSS et JavaScript, sans compilation. `index.html` compose la page ; `assets/` contient les styles, scripts et médias ; `partials/` regroupe la navigation et le pied de page.
-
-Nacrée Botanique est une identité créée pour présenter le savoir-faire de RZU Informatique. Les horaires, prestations et zones indiquées sont fictifs et ne décrivent aucun commerce réel.
-
-## Lancer en local
-
-Depuis la racine du dépôt, avec Python installé :
+## En local
 
 ```sh
 python -m http.server 8000 --bind 127.0.0.1
 ```
 
-Ouvrir <http://127.0.0.1:8000/>. Le chargement des partials nécessite HTTP.
+Ouvrir http://127.0.0.1:8000/ depuis la racine du dépôt.
 
-Les informations sur les médias sont dans [assets/images/README-license.txt](assets/images/README-license.txt) et [assets/videos/README-license.txt](assets/videos/README-license.txt).
+## Droits
 
-## Consultation et réutilisation
-
-Ce site est une démonstration réalisée par **RZU Informatique**. Vous pouvez le consulter et explorer les sources. Pour reprendre le code, le design ou les contenus dans un autre projet, merci de demander une autorisation préalable.
-
-Les éléments tiers conservent leurs droits et licences respectifs.
+Ce site est une démonstration de RZU Informatique. Consultation des sources autorisée ; merci de demander une autorisation avant de réutiliser le code, le design ou les contenus. Les éléments tiers conservent leurs droits et licences.
